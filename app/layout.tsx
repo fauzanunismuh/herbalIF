@@ -6,8 +6,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HerbalIF Unismuh",
-  description: "Created with v0",
-  generator: "v0.app",
+  description: "Tugas Pemprograman Web",
+  generator: "IF Unismuh Makassar",
 };
 
 export default function RootLayout({
