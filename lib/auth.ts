@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   name: string
+  password: string
 }
 
 export interface LoginCredentials {
@@ -55,9 +56,7 @@ export function login(credentials: LoginCredentials): Promise<User> {
       return
     }
 
-    // In real app, you'd hash and compare passwords
-    // For demo purposes, we'll use simple comparison
-    if (credentials.password === "password123") {
+    if (credentials.password === user.password) {
       setCurrentUser(user)
       resolve(user)
     } else {
@@ -79,6 +78,7 @@ export function register(credentials: RegisterCredentials): Promise<User> {
       id: Date.now().toString(),
       email: credentials.email,
       name: credentials.name,
+      password: credentials.password,
     }
 
     users.push(newUser)
