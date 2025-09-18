@@ -111,8 +111,10 @@ export default function HomePage() {
 
           <TabsContent value="identify" className="space-y-6">
             <PlantIdentification
-              apiUrl={API_URL}
-              onResultSaved={handleResultSaved}
+              apiUrl="https://api-klasifikasi-tanaman-herbal.onrender.com/predict"
+              onResultSaved={() => {
+                /* refresh history */
+              }}
             />
           </TabsContent>
 
