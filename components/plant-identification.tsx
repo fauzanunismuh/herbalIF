@@ -56,45 +56,46 @@ export function PlantIdentification({
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // ✅ gunakan props apiUrl, bukan hardcode localhost
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        body: formData,
-      });
+      // bisa switch antara lokal / render
+      // const API_URL = "http://127.0.0.1:5000/predict";
+      const API_URL = apiUrl;
 
-      const data: PredictionResult = await response.json();
+      const response = await fetch(API_URL, { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Respons dari server tidak berhasil.");
 
-      if (data.error) {
-        setResult({ prediksi: "", error: data.error });
-      } else {
-        setResult(data);
+      const data: PredictionResult | { error: string } = await response.json();
+      if ("error" in data) throw new Error(data.error);
 
-        // Save ke history
-        const user = getCurrentUser();
-        if (user && data.prediksi) {
-          const plantInfo = PLANT_INFO[data.prediksi] || {
-            category: "Non-Herbal" as const,
-            description: "Informasi tanaman tidak tersedia.",
-          };
+      setResult(data);
 
-          saveToHistory({
-            userId: user.id,
-            imageName: selectedFile.name,
-            imageUrl: previewUrl || "",
-            prediction: data.prediksi,
-            category: plantInfo.category,
-            description: plantInfo.description,
-          });
+      // ✅ simpan ke history
+      const user = getCurrentUser();
+      if (user && data.prediksi) {
+        const plantInfo = PLANT_INFO[data.prediksi] || {
+          category: "Non-Herbal" as const,
+          description: "Informasi tanaman tidak tersedia.",
+        };
 
-          onResultSaved();
-        }
+        saveToHistory({
+          userId: user.id,
+          imageName: selectedFile.name,
+          imageUrl: previewUrl || "",
+          prediction: data.prediksi,
+          category: plantInfo.category,
+          description: plantInfo.description,
+        });
+
+        onResultSaved();
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setResult({
-        prediksi: "",
-        error: "Gagal terhubung ke server. Periksa API backend.",
-      });
+    } catch (err) {
+      if (err instanceof Error) {
+        setResult({ prediksi: "", error: err.message });
+      } else {
+        setResult({
+          prediksi: "",
+          error: "Terjadi kesalahan yang tidak diketahui.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
