@@ -1,72 +1,81 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Upload, ImageIcon, Loader2 } from "lucide-react"
-import { saveToHistory, PLANT_INFO } from "@/lib/history"
-import { getCurrentUser } from "@/lib/auth"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { getCurrentUser } from "@/lib/auth";
+import { PLANT_INFO, saveToHistory } from "@/lib/history";
+import { ImageIcon, Loader2, Upload } from "lucide-react";
+import type React from "react";
+import { useRef, useState } from "react";
 
 interface PredictionResult {
-  prediksi: string
-  error?: string
+  prediksi: string;
+  error?: string;
 }
 
 interface PlantIdentificationProps {
-  onResultSaved: () => void
+  apiUrl: string; // ✅ sekarang pakai props untuk URL
+  onResultSaved: () => void;
 }
 
-export function PlantIdentification({ onResultSaved }: PlantIdentificationProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [result, setResult] = useState<PredictionResult | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function PlantIdentification({
+  apiUrl,
+  onResultSaved,
+}: PlantIdentificationProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<PredictionResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file)
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      setResult(null)
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setResult(null);
     }
-  }
+  };
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) return;
 
-    setIsLoading(true)
-    setResult(null)
+    setIsLoading(true);
+    setResult(null);
 
     try {
-      const formData = new FormData()
-      formData.append("file", selectedFile)
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      // Call Flask backend API
-      const response = await fetch("http://localhost:5000/predict", {
+      // ✅ gunakan props apiUrl, bukan hardcode localhost
+      const response = await fetch(apiUrl, {
         method: "POST",
         body: formData,
-      })
+      });
 
-      const data: PredictionResult = await response.json()
+      const data: PredictionResult = await response.json();
 
       if (data.error) {
-        setResult({ prediksi: "", error: data.error })
+        setResult({ prediksi: "", error: data.error });
       } else {
-        setResult(data)
+        setResult(data);
 
-        // Save to history
-        const user = getCurrentUser()
+        // Save ke history
+        const user = getCurrentUser();
         if (user && data.prediksi) {
           const plantInfo = PLANT_INFO[data.prediksi] || {
             category: "Non-Herbal" as const,
             description: "Informasi tanaman tidak tersedia.",
-          }
+          };
 
           saveToHistory({
             userId: user.id,
@@ -75,30 +84,30 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
             prediction: data.prediksi,
             category: plantInfo.category,
             description: plantInfo.description,
-          })
+          });
 
-          onResultSaved()
+          onResultSaved();
         }
       }
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error:", error);
       setResult({
         prediksi: "",
-        error: "Gagal terhubung ke server. Pastikan Flask backend berjalan di port 5000.",
-      })
+        error: "Gagal terhubung ke server. Periksa API backend.",
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
-    setSelectedFile(null)
-    setPreviewUrl(null)
-    setResult(null)
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setResult(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -108,7 +117,8 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
           Identifikasi Tanaman
         </CardTitle>
         <CardDescription>
-          Upload gambar daun tanaman untuk mengidentifikasi apakah termasuk tanaman herbal atau non-herbal
+          Upload gambar daun tanaman untuk mengidentifikasi apakah termasuk
+          tanaman herbal atau non-herbal
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -135,7 +145,11 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={handleUpload} disabled={isLoading} className="flex-1">
+              <Button
+                onClick={handleUpload}
+                disabled={isLoading}
+                className="flex-1"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -156,9 +170,13 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
         )}
 
         {result && (
-          <Card className={result.error ? "border-destructive" : "border-primary"}>
+          <Card
+            className={result.error ? "border-destructive" : "border-primary"}
+          >
             <CardHeader>
-              <CardTitle className={result.error ? "text-destructive" : "text-primary"}>
+              <CardTitle
+                className={result.error ? "text-destructive" : "text-primary"}
+              >
                 {result.error ? "Error" : "Hasil Identifikasi"}
               </CardTitle>
             </CardHeader>
@@ -169,7 +187,9 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
                 <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium">Nama Tanaman:</Label>
-                    <p className="text-lg font-semibold capitalize">{result.prediksi}</p>
+                    <p className="text-lg font-semibold capitalize">
+                      {result.prediksi}
+                    </p>
                   </div>
 
                   {PLANT_INFO[result.prediksi] && (
@@ -188,7 +208,9 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
                       </div>
 
                       <div>
-                        <Label className="text-sm font-medium">Deskripsi:</Label>
+                        <Label className="text-sm font-medium">
+                          Deskripsi:
+                        </Label>
                         <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                           {PLANT_INFO[result.prediksi].description}
                         </p>
@@ -202,5 +224,5 @@ export function PlantIdentification({ onResultSaved }: PlantIdentificationProps)
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

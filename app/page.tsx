@@ -1,39 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AuthForm } from "@/components/auth-form"
-import { PlantIdentification } from "@/components/plant-identification"
-import { HistoryList } from "@/components/history-list"
-import { getCurrentUser, logout, type User } from "@/lib/auth"
-import { Leaf, LogOut, UserIcon, Upload, History } from "lucide-react"
+import { AuthForm } from "@/components/auth-form";
+import { HistoryList } from "@/components/history-list";
+import { PlantIdentification } from "@/components/plant-identification";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getCurrentUser, logout, type User } from "@/lib/auth";
+import { History, Leaf, LogOut, Upload, UserIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [historyRefresh, setHistoryRefresh] = useState(0)
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 
   useEffect(() => {
-    const currentUser = getCurrentUser()
-    setUser(currentUser)
-    setIsLoading(false)
-  }, [])
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    setIsLoading(false);
+  }, []);
 
   const handleAuthSuccess = () => {
-    const currentUser = getCurrentUser()
-    setUser(currentUser)
-  }
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+  };
 
   const handleLogout = () => {
-    logout()
-    setUser(null)
-  }
+    logout();
+    setUser(null);
+  };
 
   const handleResultSaved = () => {
-    setHistoryRefresh((prev) => prev + 1)
-  }
+    setHistoryRefresh((prev) => prev + 1);
+  };
 
   if (isLoading) {
     return (
@@ -43,11 +45,11 @@ export default function HomePage() {
           <p>Memuat aplikasi...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return <AuthForm onSuccess={handleAuthSuccess} />
+    return <AuthForm onSuccess={handleAuthSuccess} />;
   }
 
   return (
@@ -62,7 +64,9 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">HerbalIF</h1>
-                <p className="text-sm text-muted-foreground">Universitas Muhammadiyah Makassar</p>
+                <p className="text-sm text-muted-foreground">
+                  Universitas Muhammadiyah Makassar
+                </p>
               </div>
             </div>
 
@@ -83,10 +87,13 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold mb-2">Sistem Identifikasi Tanaman Herbal</h2>
+          <h2 className="text-3xl font-bold mb-2">
+            Sistem Identifikasi Tanaman Herbal
+          </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Aplikasi berbasis KNN dan PSO untuk mengidentifikasi tanaman herbal dan non-herbal melalui analisis citra
-            daun menggunakan fitur Average RGB.
+            Aplikasi berbasis KNN dan PSO untuk mengidentifikasi tanaman herbal
+            dan non-herbal melalui analisis citra daun menggunakan fitur Average
+            RGB.
           </p>
         </div>
 
@@ -103,7 +110,10 @@ export default function HomePage() {
           </TabsList>
 
           <TabsContent value="identify" className="space-y-6">
-            <PlantIdentification onResultSaved={handleResultSaved} />
+            <PlantIdentification
+              apiUrl={API_URL}
+              onResultSaved={handleResultSaved}
+            />
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
@@ -119,9 +129,10 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                HerbalIF menggunakan algoritma K-Nearest Neighbors (KNN) yang dioptimasi dengan Particle Swarm
-                Optimization (PSO) untuk mengklasifikasikan tanaman berdasarkan fitur rata-rata warna RGB dari citra
-                daun.
+                HerbalIF menggunakan algoritma K-Nearest Neighbors (KNN) yang
+                dioptimasi dengan Particle Swarm Optimization (PSO) untuk
+                mengklasifikasikan tanaman berdasarkan fitur rata-rata warna RGB
+                dari citra daun.
               </p>
             </CardContent>
           </Card>
@@ -146,9 +157,12 @@ export default function HomePage() {
       <footer className="bg-background/80 backdrop-blur-sm border-t mt-16">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
           <p>© 2025 HerbalIF - Universitas Muhammadiyah Makassar</p>
-          <p>Dikembangkan oleh: Fauzan Azhari Rahman, Muh. Tegar Al Fikri, Muhammad Dzulfikar Hidayat</p>
+          <p>
+            Dikembangkan oleh: Fauzan Azhari Rahman, Muh. Tegar Al Fikri,
+            Muhammad Dzulfikar Hidayat
+          </p>
         </div>
       </footer>
     </div>
-  )
+  );
 }
